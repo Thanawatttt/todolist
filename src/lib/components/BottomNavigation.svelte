@@ -14,8 +14,10 @@
     }
 
     const navItems: NavItem[] = [
-        { id: 'dashboard', label: 'Dashboard', icon: '✨', href: '/dashboard' },
-        { id: 'settings', label: 'Settings', icon: '⚡', href: '/settings' },
+        { id: 'dashboard', label: 'Home', icon: '🏠', href: '/dashboard' },
+        { id: 'tasks', label: 'Tasks', icon: '📝', href: '/tasks' },
+        { id: 'settings', label: 'Settings', icon: '⚙️', href: '/settings' },
+        { id: 'profile', label: 'Profile', icon: '👤', href: '/profile' },
     ];
 
     let isAnimating = false;
@@ -66,13 +68,6 @@
     }
 
     function handleThemeToggle() {
-        const button = document.querySelector('.theme-toggle-btn');
-        if (button) {
-            button.classList.add('theme-rotating');
-            setTimeout(() => {
-                button.classList.remove('theme-rotating');
-            }, 600);
-        }
         themeStore.toggle();
         dispatch('themeChanged');
     }
@@ -94,30 +89,127 @@
             
             @keyframes slideUp {
                 0% {
-                    transform: translateY(100%);
+                    transform: translateY(100%) scale(0.95);
                     opacity: 0;
                 }
                 100% {
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
                     opacity: 1;
                 }
             }
             
             @keyframes glow {
                 0%, 100% {
-                    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+                    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
                 }
                 50% {
-                    box-shadow: 0 0 30px rgba(99, 102, 241, 0.6);
+                    box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
                 }
             }
             
             @keyframes float {
                 0%, 100% {
-                    transform: translateY(0);
+                    transform: translateY(0) scale(1);
                 }
                 50% {
-                    transform: translateY(-3px);
+                    transform: translateY(-2px) scale(1.05);
+                }
+            }
+            
+            @keyframes dropdownSlideUp {
+                0% {
+                    transform: translateY(15px) scale(0.9);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateY(0) scale(1);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes fadeIn {
+                0% {
+                    opacity: 0;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes shimmer {
+                0% {
+                    background-position: -100% center;
+                }
+                100% {
+                    background-position: 100% center;
+                }
+            }
+            
+            @keyframes pulse-glow {
+                0%, 100% {
+                    box-shadow: 0 0 15px rgba(99, 102, 241, 0.3);
+                }
+                50% {
+                    box-shadow: 0 0 25px rgba(99, 102, 241, 0.6);
+                }
+            }
+            
+            @keyframes aurora {
+                0% {
+                    background-position: 0% 50%;
+                }
+                50% {
+                    background-position: 100% 50%;
+                }
+                100% {
+                    background-position: 0% 50%;
+                }
+            }
+            
+            @keyframes slideIn {
+                0% {
+                    transform: translateX(-10px);
+                    opacity: 0;
+                }
+                100% {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes bounce {
+                0%, 100% {
+                    transform: translateY(0);
+                }
+                25% {
+                    transform: translateY(-8px);
+                }
+                50% {
+                    transform: translateY(-4px);
+                }
+                75% {
+                    transform: translateY(-6px);
+                }
+            }
+            
+            @keyframes float-bubble {
+                0%, 100% {
+                    transform: translateY(0) rotate(0deg);
+                }
+                33% {
+                    transform: translateY(-10px) rotate(120deg);
+                }
+                66% {
+                    transform: translateY(5px) rotate(240deg);
+                }
+            }
+            
+            @keyframes neon-pulse {
+                0%, 100% {
+                    filter: brightness(1) drop-shadow(0 0 10px rgba(99, 102, 241, 0.8));
+                }
+                50% {
+                    filter: brightness(1.2) drop-shadow(0 0 20px rgba(99, 102, 241, 1));
                 }
             }
             
@@ -155,28 +247,51 @@
 
 <div class="bottom-nav" class:animating={isAnimating}>
     <div class="nav-container" style="
-    --nav-bg: {$themeStore.theme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'rgba(15, 23, 42, 0.95)'};
-    --nav-border: {$themeStore.theme === 'light' ? 'rgba(203, 213, 225, 0.6)' : 'rgba(71, 85, 105, 0.6)'};
-    --shadow-1: {$themeStore.theme === 'light' ? 'rgba(0, 0, 0, 0.08)' : 'rgba(0, 0, 0, 0.4)'};
-    --shadow-2: {$themeStore.theme === 'light' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(0, 0, 0, 0.2)'};
-    --shadow-3: {$themeStore.theme === 'light' ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.05)'};
-    --gradient-color: {$themeStore.theme === 'light' ? 'linear-gradient(90deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1))' : 'linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1))'};
+    --nav-bg: {$themeStore.theme === 'light' 
+        ? 'rgba(255, 255, 255, 0.85)' 
+        : 'rgba(17, 24, 39, 0.85)'};
+    --nav-border: {$themeStore.theme === 'light' 
+        ? 'rgba(229, 231, 235, 0.3)' 
+        : 'rgba(75, 85, 99, 0.3)'};
+    --shadow-1: {$themeStore.theme === 'light' 
+        ? 'rgba(0, 0, 0, 0.05)' 
+        : 'rgba(0, 0, 0, 0.3)'};
+    --shadow-2: {$themeStore.theme === 'light' 
+        ? 'rgba(0, 0, 0, 0.03)' 
+        : 'rgba(0, 0, 0, 0.15)'};
+    --shadow-3: {$themeStore.theme === 'light' 
+        ? 'rgba(255, 255, 255, 0.9)' 
+        : 'rgba(255, 255, 255, 0.08)'};
+    --gradient-color: {$themeStore.theme === 'light' 
+        ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05))' 
+        : 'linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08))'};
     --primary-color: {$themeStore.colors.primary};
     --primary-opacity-40: {$themeStore.colors.primary}40;
     --primary-opacity-10: {$themeStore.colors.primary}1a;
-    --icon-filter: {$themeStore.theme === 'light' ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))' : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))'};
-    --icon-active-filter: {$themeStore.theme === 'light' ? 'drop-shadow(0 2px 8px rgba(99, 102, 241, 0.4))' : 'drop-shadow(0 2px 8px rgba(129, 140, 248, 0.6))'};
-    --label-color: {$themeStore.theme === 'light' ? '#6b7280' : '#9ca3af'};
-    --theme-toggle-bg: {$themeStore.theme === 'light' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)'};
-    --theme-toggle-hover: {$themeStore.theme === 'light' ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'};
-    --theme-toggle-icon-filter: {$themeStore.theme === 'light' ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))' : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4))'};
+    --icon-filter: {$themeStore.theme === 'light' 
+        ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.08))' 
+        : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2))'};
+    --icon-active-filter: {$themeStore.theme === 'light' 
+        ? 'drop-shadow(0 2px 6px rgba(99, 102, 241, 0.3))' 
+        : 'drop-shadow(0 2px 6px rgba(129, 140, 248, 0.5))'};
+    --label-color: {$themeStore.theme === 'light' ? '#6b7280' : '#e5e7eb'};
+    --theme-toggle-bg: {$themeStore.theme === 'light' 
+        ? 'rgba(0, 0, 0, 0.03)' 
+        : 'rgba(255, 255, 255, 0.03)'};
+    --theme-toggle-hover: {$themeStore.theme === 'light' 
+        ? 'rgba(0, 0, 0, 0.08)' 
+        : 'rgba(255, 255, 255, 0.08)'};
+    --theme-toggle-icon-filter: {$themeStore.theme === 'light' 
+        ? 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15))' 
+        : 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3))'};
     --theme-toggle-text: {$themeStore.theme === 'light' ? '#374151' : '#e5e7eb'};
     --indicator-primary: {$themeStore.colors.primary};
     --indicator-secondary: {$themeStore.colors.secondary || $themeStore.colors.primary};
     ">
-        <!-- Background Effects -->
+        <!-- Modern Background Effects -->
         <div class="nav-bg-effect"></div>
         <div class="nav-glow"></div>
+        <div class="nav-shimmer"></div>
         
         <!-- Navigation Items -->
         {#each navItems as item (item.id)}
@@ -209,29 +324,12 @@
                 </div>
             </button>
         {/each}
-
-        <!-- Theme Toggle Button -->
-        <button
-            class="theme-toggle-btn"
-            on:click={handleThemeToggle}
-            aria-label="Toggle theme"
-        >
-            <div class="theme-content">
-                <div class="theme-icon-wrapper">
-                    <span class="theme-icon">
-                        {$themeStore.theme === 'light' ? '🌙' : '☀️'}
-                    </span>
-                    <div class="theme-glow-effect"></div>
-                </div>
-                <span class="theme-label">
-                    {$themeStore.theme === 'light' ? 'Dark' : 'Light'}
-                </span>
-            </div>
-        </button>
     </div>
     
-    <!-- Floating Indicator -->
-    <div class="nav-indicator" style="transform: translateX({navItems.findIndex(item => item.href === currentPath) * 100}%)"></div>
+    <!-- Modern Navigation Indicator -->
+    <div class="nav-indicator">
+        <div class="indicator-dot" style="transform: translateX({navItems.findIndex(item => item.href === currentPath) * 25}%)"></div>
+    </div>
 </div>
 
 <style>
@@ -241,10 +339,10 @@
         left: 0;
         right: 0;
         z-index: 1000;
-        height: 80px;
+        height: 85px;
         background: transparent;
         pointer-events: none;
-        animation: slideUp 0.5s ease-out;
+        animation: slideUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
     
     .bottom-nav.animating {
@@ -252,44 +350,40 @@
     }
     
     .nav-container {
-        position: absolute;
+        position: fixed;
         bottom: 12px;
         left: 50%;
         transform: translateX(-50%);
-        width: min(90%, 400px);
-        height: 68px;
+        width: min(90%, 420px);
+        height: 70px;
         background: var(--nav-bg);
-        backdrop-filter: blur(24px);
-        -webkit-backdrop-filter: blur(24px);
+        backdrop-filter: blur(20px) saturate(180%);
+        -webkit-backdrop-filter: blur(20px) saturate(180%);
         border: 1px solid var(--nav-border);
         border-radius: 24px;
         box-shadow: 
-            0 20px 40px var(--shadow-1),
-            0 8px 16px var(--shadow-2),
+            0 8px 32px var(--shadow-1),
+            0 2px 8px var(--shadow-2),
             inset 0 1px 0 var(--shadow-3);
         display: flex;
         align-items: center;
         justify-content: space-around;
-        padding: 0 16px;
-        gap: 4px;
+        padding: 0 24px;
         pointer-events: auto;
+        z-index: 100;
         overflow: hidden;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
+    /* Modern Background Effects */
     .nav-bg-effect {
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
-        height: 1px;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            var(--primary-opacity-40),
-            transparent
-        );
-        opacity: 0.8;
+        bottom: 0;
+        background: var(--gradient-color);
+        opacity: 0.6;
+        z-index: 0;
     }
     
     .nav-glow {
@@ -299,17 +393,36 @@
         width: 200%;
         height: 200%;
         background: radial-gradient(
-            circle,
+            circle at center,
             var(--primary-opacity-10) 0%,
             transparent 70%
         );
         opacity: 0;
         transition: opacity 0.3s ease;
+        z-index: 1;
+        pointer-events: none;
+    }
+    
+    .nav-shimmer {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 100%
+        );
+        animation: shimmer 3s ease-in-out infinite;
+        z-index: 2;
         pointer-events: none;
     }
     
     .nav-container:hover .nav-glow {
         opacity: 1;
+        animation: pulse-glow 4s ease-in-out infinite;
     }
     
     .nav-item {
@@ -318,22 +431,94 @@
         height: 100%;
         background: transparent;
         border: none;
-        border-radius: 18px;
         cursor: pointer;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        padding: 10px 6px;
+        max-width: 90px;
+        border-radius: 16px;
+        z-index: 10;
     }
     
-    .nav-item:hover {
-        transform: translateY(-2px);
+    .nav-item::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 50px;
+        height: 50px;
+        background: radial-gradient(
+            circle,
+            var(--primary-opacity-10) 0%,
+            transparent 70%
+        );
+        border-radius: 50%;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: -1;
+    }
+    
+    .nav-item:hover::before {
+        transform: translate(-50%, -50%) scale(1);
     }
     
     .nav-item.active {
         background: var(--primary-opacity-10);
-        transform: translateY(-2px);
+        transform: scale(1.05);
+    }
+    
+    .nav-item.active::before {
+        transform: translate(-50%, -50%) scale(1.2);
+        background: radial-gradient(
+            circle,
+            var(--primary-opacity-20) 0%,
+            var(--primary-opacity-10) 50%,
+            transparent 70%
+        );
+    }
+    
+    .nav-item.active .nav-icon {
+        color: var(--primary-color);
+        transform: scale(1.1);
+    }
+    
+    .nav-item.active .nav-label {
+        color: var(--primary-color);
+        font-weight: 600;
+        transform: translateY(-1px);
+    }
+    
+    .nav-item .nav-icon {
+        color: var(--label-color);
+        font-size: 22px;
+        margin-bottom: 6px;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        z-index: 2;
+    }
+    
+    .nav-item .nav-label {
+        color: var(--label-color);
+        font-size: 11px;
+        font-weight: 500;
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        text-align: center;
+        line-height: 1.2;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .nav-item:hover .nav-icon {
+        color: var(--primary-color);
+        transform: translateY(-2px) scale(1.05);
+    }
+    
+    .nav-item:hover .nav-label {
+        color: var(--primary-color);
+        transform: translateY(-1px);
     }
     
     .nav-content {
@@ -341,7 +526,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 2px;
+        gap: 4px;
         padding: 8px;
         position: relative;
         z-index: 2;
@@ -349,25 +534,25 @@
     
     .nav-icon-wrapper {
         position: relative;
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
         display: flex;
         align-items: center;
         justify-content: center;
     }
     
     .nav-icon {
-        font-size: 20px;
+        font-size: 22px;
         line-height: 1;
         display: block;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         filter: var(--icon-filter);
     }
     
     .nav-icon.icon-active {
         transform: scale(1.15);
         filter: var(--icon-active-filter);
-        animation: float 3s ease-in-out infinite;
+        animation: bounce 2s ease-in-out infinite;
     }
     
     .nav-ripple-effect {
@@ -375,30 +560,39 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        width: 40px;
-        height: 40px;
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
-        background: var(--primary-opacity-10);
-        animation: glow 2s ease-in-out infinite;
+        background: radial-gradient(
+            circle,
+            var(--primary-opacity-15) 0%,
+            var(--primary-opacity-10) 50%,
+            transparent 70%
+        );
+        animation: glow 3s ease-in-out infinite;
     }
     
     .nav-badge {
         position: absolute;
-        top: -4px;
-        right: -4px;
-        min-width: 16px;
-        height: 16px;
-        background: var(--primary-opacity-10);
+        top: -6px;
+        right: -6px;
+        min-width: 18px;
+        height: 18px;
+        background: linear-gradient(135deg, var(--primary-color), var(--indicator-secondary));
         color: white;
-        border-radius: 8px;
+        border-radius: 10px;
         font-size: 10px;
         font-weight: 600;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 4px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        animation: pulse 2s ease-in-out infinite;
+        padding: 0 5px;
+        box-shadow: 
+            0 2px 8px rgba(99, 102, 241, 0.3),
+            0 1px 3px rgba(0, 0, 0, 0.1);
+        animation: bounce 2s ease-in-out infinite;
+        z-index: 3;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
     .nav-label {
@@ -413,118 +607,80 @@
     .nav-label.label-active {
         color: var(--primary-color);
         font-weight: 600;
+        transform: translateY(-1px);
     }
     
-    .theme-toggle-btn {
-        position: relative;
-        flex: 1;
-        height: 100%;
-        background: transparent;
-        border: none;
-        border-radius: 18px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        overflow: hidden;
-    }
-    
-    .theme-toggle-btn:hover {
-        transform: translateY(-2px);
-    }
-    
-    .theme-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-        padding: 8px;
-        position: relative;
-        z-index: 2;
-    }
-    
-    .theme-icon-wrapper {
-        position: relative;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .theme-icon {
-        font-size: 20px;
-        line-height: 1;
-        display: block;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        filter: var(--theme-toggle-icon-filter);
-    }
-    
-    .theme-glow-effect {
+    /* Modern Navigation Indicator */
+    .nav-indicator {
         position: absolute;
-        top: 50%;
+        bottom: 12px;
         left: 50%;
-        transform: translate(-50%, -50%);
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        background: var(--theme-toggle-bg);
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        transform: translateX(-50%);
+        width: min(90%, 420px);
+        height: 4px;
+        background: linear-gradient(
+            90deg,
+            var(--indicator-primary) 0%,
+            var(--indicator-secondary) 100%
+        );
+        border-radius: 2px;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 99;
     }
     
-    .theme-toggle-btn:hover .theme-glow-effect {
-        opacity: 1;
-        animation: glow 2s ease-in-out infinite;
+    .nav-indicator::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 25%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            var(--indicator-primary) 0%,
+            var(--indicator-secondary) 100%
+        );
+        border-radius: 2px;
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 0 12px var(--indicator-primary);
     }
     
-    .theme-label {
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--theme-toggle-text);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        text-align: center;
-        line-height: 1;
+    .indicator-dot {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 25%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            var(--indicator-primary) 0%,
+            var(--indicator-secondary) 100%
+        );
+        border-radius: 2px;
+        transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        box-shadow: 0 0 12px var(--indicator-primary);
     }
     
-.nav-indicator {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 25%;
-    height: 3px;
-    background: linear-gradient(90deg, var(--indicator-primary), var(--indicator-secondary));
-    border-radius: 3px 3px 0 0;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 0 10px var(--indicator-primary);
-}
-    
-    @keyframes pulse {
-        0%, 100% {
-            transform: scale(1);
-            opacity: 1;
-        }
-        50% {
-            transform: scale(1.1);
-            opacity: 0.8;
-        }
-    }
-    
+    /* Responsive Design */
     @media (max-width: 380px) {
         .nav-container {
             width: 95%;
-            height: 64px;
-            bottom: 8px;
+            height: 68px;
+            bottom: 10px;
+            padding: 0 20px;
         }
         
-        .nav-icon, .theme-icon {
-            font-size: 18px;
+        .nav-icon {
+            font-size: 20px;
         }
         
-        .nav-label, .theme-label {
+        .nav-label {
             font-size: 9px;
+        }
+        
+        .nav-indicator {
+            width: 95%;
         }
     }
     
@@ -532,6 +688,21 @@
         .nav-container {
             width: 420px;
             height: 72px;
+            bottom: 16px;
+        }
+        
+        .nav-indicator {
+            width: 420px;
+        }
+    }
+    
+    /* Dark theme optimizations */
+    @media (prefers-color-scheme: dark) {
+        .nav-container {
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.4),
+                0 2px 16px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
     }
 </style>

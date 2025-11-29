@@ -131,3 +131,72 @@ export function createTestNotificationMessage(
     username: 'Todo App',
   };
 }
+
+export function createTaskReminderMessage(
+  tasks: any[],
+  mentionUser?: boolean,
+  userMention?: string
+): DiscordMessage {
+  const content = mentionUser && userMention 
+    ? `<@${userMention.replace('@', '')}> You have task`
+    : 'You have task';
+
+  let taskList = '';
+  
+  // Sort tasks by deadline (tasks with deadlines first, then by date)
+  const sortedTasks = tasks.sort((a, b) => {
+    if (a.dueDate && !b.dueDate) return -1;
+    if (!a.dueDate && b.dueDate) return 1;
+    if (a.dueDate && b.dueDate) {
+      return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+    }
+    return 0;
+  });
+
+  sortedTasks.forEach(task => {
+    const priorityEmojis: Record<string, string> = {
+      high: '🔴',
+      medium: '🟡', 
+      low: '🟢'
+    };
+    
+    const emoji = priorityEmojis[task.priority] || '📋';
+    
+    if (task.dueDate) {
+      const dueDate = new Date(task.dueDate);
+      const today = new Date();
+      const daysLeft = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      let deadlineText = '';
+      if (daysLeft === 0) {
+        deadlineText = '(Today)';
+      } else if (daysLeft === 1) {
+        deadlineText = '(Tomorrow)';
+      } else if (daysLeft > 0) {
+        deadlineText = `(${daysLeft} days)`;
+      } else {
+        deadlineText = `(Overdue by ${Math.abs(daysLeft)} days)`;
+      }
+      
+      taskList += `- ${emoji} ${task.title} ${deadlineText}\n`;
+    } else {
+      taskList += `- ${emoji} ${task.title}\n`;
+    }
+  });
+
+  const embed: DiscordEmbed = {
+    title: `You have ${tasks.length} pending task${tasks.length > 1 ? 's' : ''}`,
+    description: taskList,
+    color: 0x5865F2,
+    timestamp: new Date().toISOString(),
+    footer: {
+      text: 'Todo App Reminder System',
+    },
+  };
+
+  return {
+    content,
+    embeds: [embed],
+    username: 'Todo App',
+  };
+}

@@ -2,12 +2,21 @@
 	import { themeStore } from '$lib/theme';
 	import type { Task } from '$lib/types';
 
+	interface TaskDialogProps {
+	isOpen?: boolean;
+	selectedTask?: Task | undefined;
+	onClose?: () => void;
+	onSave?: (taskData: Partial<Task>) => void;
+	isLoading?: boolean;
+}
+
 	let { 
 		isOpen = false, 
-		selectedTask = undefined, 
+		selectedTask = undefined as Task | undefined, 
 		onClose = () => {}, 
-		onSave = () => {} 
-	} = $props();
+		onSave = (taskData: Partial<Task>) => {},
+		isLoading = false 
+	}: TaskDialogProps = $props();
 
 	let title = $state('');
 	let description = $state('');
@@ -56,7 +65,14 @@
 
 {#if isOpen}
 	<div 
-		on:click={handleBackdropClick}
+		onclick={handleBackdropClick}
+		onkeydown={(e) => {
+			if (e.key === 'Escape') {
+				handleClose();
+			}
+		}}
+		role="dialog"
+		tabindex="-1"
 		style="
 			position: fixed;
 			top: 0;
@@ -91,12 +107,13 @@
 				{selectedTask ? '✏️ Edit Task' : '➕ Create New Task'}
 			</h2>
 
-			<form on:submit|preventDefault={handleSubmit} style="display: flex; flex-direction: column; gap: 20px;">
+			<form onsubmit={(e) => { e.preventDefault(); handleSubmit(); }} style="display: flex; flex-direction: column; gap: 20px;">
 				<div>
-					<label style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
+					<label for="task-title" style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
 						Title *
 					</label>
 					<input
+						id="task-title"
 						bind:value={title}
 						type="text"
 						placeholder="Enter task title"
@@ -111,11 +128,11 @@
 							font-size: 16px;
 							transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 						"
-						on:focus={(e) => {
+						onfocus={(e) => {
 							e.currentTarget.style.borderColor = $themeStore.colors.primary;
 							e.currentTarget.style.boxShadow = `0 0 0 3px ${$themeStore.colors.primary}20`;
 						}}
-						on:blur={(e) => {
+						onblur={(e) => {
 							e.currentTarget.style.borderColor = $themeStore.colors.inputBorder;
 							e.currentTarget.style.boxShadow = 'none';
 						}}
@@ -123,10 +140,11 @@
 				</div>
 
 				<div>
-					<label style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
+					<label for="task-description" style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
 						Description
 					</label>
 					<textarea
+						id="task-description"
 						bind:value={description}
 						placeholder="Enter task description (optional)"
 						rows="3"
@@ -141,11 +159,11 @@
 							resize: vertical;
 							transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 						"
-						on:focus={(e) => {
+						onfocus={(e) => {
 							e.currentTarget.style.borderColor = $themeStore.colors.primary;
 							e.currentTarget.style.boxShadow = `0 0 0 3px ${$themeStore.colors.primary}20`;
 						}}
-						on:blur={(e) => {
+						onblur={(e) => {
 							e.currentTarget.style.borderColor = $themeStore.colors.inputBorder;
 							e.currentTarget.style.boxShadow = 'none';
 						}}
@@ -153,14 +171,14 @@
 				</div>
 
 				<div>
-					<label style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
+					<label for="task-priority" style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
 						Priority
 					</label>
 					<div style="display: flex; gap: 12px;">
 						{#each ['LOW', 'MEDIUM', 'HIGH'] as prio}
 							<button
 								type="button"
-								on:click={() => priority = prio as 'LOW' | 'MEDIUM' | 'HIGH'}
+								onclick={() => priority = prio as 'LOW' | 'MEDIUM' | 'HIGH'}
 								style="
 									flex: 1;
 									padding: 10px;
@@ -179,13 +197,13 @@
 									cursor: pointer;
 									transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 								"
-								on:mouseenter={(e) => {
+								onmouseenter={(e) => {
 									if (priority !== prio) {
 										e.currentTarget.style.background = $themeStore.colors.primary + '10';
 										e.currentTarget.style.borderColor = $themeStore.colors.primary;
 									}
 								}}
-								on:mouseleave={(e) => {
+								onmouseleave={(e) => {
 									if (priority !== prio) {
 										e.currentTarget.style.background = $themeStore.colors.inputBg;
 										e.currentTarget.style.borderColor = $themeStore.colors.inputBorder;
@@ -199,10 +217,11 @@
 				</div>
 
 				<div>
-					<label style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
+					<label for="task-deadline" style="display: block; margin-bottom: 8px; color: {$themeStore.colors.text}; font-weight: 500; font-size: 14px;">
 						Deadline
 					</label>
 					<input
+						id="task-deadline"
 						bind:value={deadline}
 						type="date"
 						style="
@@ -215,11 +234,11 @@
 							font-size: 16px;
 							transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 						"
-						on:focus={(e) => {
+						onfocus={(e) => {
 							e.currentTarget.style.borderColor = $themeStore.colors.primary;
 							e.currentTarget.style.boxShadow = `0 0 0 3px ${$themeStore.colors.primary}20`;
 						}}
-						on:blur={(e) => {
+						onblur={(e) => {
 							e.currentTarget.style.borderColor = $themeStore.colors.inputBorder;
 							e.currentTarget.style.boxShadow = 'none';
 						}}
@@ -229,7 +248,7 @@
 				<div style="display: flex; gap: 12px; margin-top: 8px;">
 					<button
 						type="button"
-						on:click={handleClose}
+						onclick={handleClose}
 						style="
 							flex: 1;
 							padding: 14px 24px;
@@ -242,10 +261,10 @@
 							cursor: pointer;
 							transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 						"
-						on:mouseenter={(e) => {
+						onmouseenter={(e) => {
 							e.currentTarget.style.background = $themeStore.colors.cardBorder + '20';
 						}}
-						on:mouseleave={(e) => {
+						onmouseleave={(e) => {
 							e.currentTarget.style.background = $themeStore.colors.inputBg;
 						}}
 					>
@@ -253,7 +272,7 @@
 					</button>
 					<button
 						type="submit"
-						disabled={!title.trim()}
+						disabled={!title.trim() || isLoading}
 						style="
 							flex: 1;
 							padding: 14px 24px;
@@ -266,21 +285,18 @@
 							cursor: pointer;
 							transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 							box-shadow: 0 4px 15px {$themeStore.colors.primary}40;
-							opacity: {title.trim() ? 1 : 0.6};
-							cursor: {title.trim() ? 'pointer' : 'not-allowed'};
+							opacity: {(title.trim() && !isLoading) ? 1 : 0.6};
+							cursor: {(title.trim() && !isLoading) ? 'pointer' : 'not-allowed'};
+							display: flex;
+							align-items: center;
+							justify-content: center;
+							gap: 8px;
 						"
-						on:mouseenter={(e) => {
-							if (title.trim()) {
-								e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';
-								e.currentTarget.style.boxShadow = `0 6px 20px ${$themeStore.colors.primary}60`;
-							}
-						}}
-						on:mouseleave={(e) => {
-							e.currentTarget.style.transform = 'translateY(0) scale(1)';
-							e.currentTarget.style.boxShadow = `0 4px 15px ${$themeStore.colors.primary}40`;
-						}}
 					>
-						{selectedTask ? '💾 Update Task' : '➕ Create Task'}
+						{#if isLoading}
+							<div style="width: 16px; height: 16px; border: 2px solid rgba(255, 255, 255, 0.3); border-top: 2px solid white; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+						{/if}
+						{selectedTask ? (isLoading ? 'Updating...' : '💾 Update Task') : (isLoading ? 'Creating...' : '➕ Create Task')}
 					</button>
 				</div>
 			</form>

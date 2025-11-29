@@ -12,6 +12,11 @@
 	let isMobile = false;
 	let selectedTask: Task | undefined;
 	let isDialogOpen = false;
+	let isCreatingTask = false;
+	let isUpdatingTask = false;
+	let isDeletingTask = false;
+	let showLoadingPopup = false;
+	let loadingMessage = '';
 
 	// Check mobile on mount and resize
 	onMount(() => {
@@ -23,6 +28,16 @@
 
 	function checkMobile() {
 		isMobile = window.innerWidth <= 768;
+	}
+
+	function showLoading(message: string) {
+		loadingMessage = message;
+		showLoadingPopup = true;
+	}
+
+	function hideLoading() {
+		showLoadingPopup = false;
+		loadingMessage = '';
 	}
 
 	async function fetchTasks() {
@@ -54,6 +69,9 @@
 		const token = localStorage.getItem('token');
 		if (!token) return;
 
+		isCreatingTask = true;
+		showLoading('Creating task...');
+
 		try {
 			const response = await fetch('/api/tasks', {
 				method: 'POST',
@@ -69,9 +87,17 @@
 				tasks = [newTask, ...tasks];
 				isDialogOpen = false;
 				selectedTask = undefined;
+			} else {
+				const errorData = await response.json().catch(() => ({}));
+				console.error('Create task error:', errorData);
+				alert(`Failed to create task: ${errorData.error || 'Unknown error'}`);
 			}
 		} catch (error) {
 			console.error('Failed to create task:', error);
+			alert('Failed to create task. Please try again.');
+		} finally {
+			isCreatingTask = false;
+			hideLoading();
 		}
 	}
 
@@ -80,6 +106,9 @@
 
 		const token = localStorage.getItem('token');
 		if (!token) return;
+
+		isUpdatingTask = true;
+		showLoading('Updating task...');
 
 		try {
 			const response = await fetch('/api/tasks', {
@@ -96,15 +125,26 @@
 				tasks = tasks.map(t => t.id === selectedTask?.id ? updatedTask : t);
 				isDialogOpen = false;
 				selectedTask = undefined;
+			} else {
+				const errorData = await response.json().catch(() => ({}));
+				console.error('Update task error:', errorData);
+				alert(`Failed to update task: ${errorData.error || 'Unknown error'}`);
 			}
 		} catch (error) {
 			console.error('Failed to update task:', error);
+			alert('Failed to update task. Please try again.');
+		} finally {
+			isUpdatingTask = false;
+			hideLoading();
 		}
 	}
 
 	async function handleDeleteTask(taskId: string) {
 		const token = localStorage.getItem('token');
 		if (!token) return;
+
+		isDeletingTask = true;
+		showLoading('Deleting task...');
 
 		try {
 			const response = await fetch(`/api/tasks/${taskId}`, {
@@ -116,9 +156,17 @@
 
 			if (response.ok) {
 				tasks = tasks.filter(t => t.id !== taskId);
+			} else {
+				const errorData = await response.json().catch(() => ({}));
+				console.error('Failed to delete task:', errorData.error);
+				alert(`Failed to delete task: ${errorData.error || 'Unknown error'}`);
 			}
 		} catch (error) {
 			console.error('Failed to delete task:', error);
+			alert('Failed to delete task. Please try again.');
+		} finally {
+			isDeletingTask = false;
+			hideLoading();
 		}
 	}
 
@@ -176,6 +224,8 @@ padding: 24px;
 border: 1px solid rgba(255, 255, 255, 0.1);
 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;"
+					role="button"
+					tabindex="0"
 					on:mouseenter={(e) => {
 						e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
 						e.currentTarget.style.boxShadow = `0 16px 48px ${$themeStore.colors.primary}30`;
@@ -183,6 +233,12 @@ transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); po
 					on:mouseleave={(e) => {
 						e.currentTarget.style.transform = 'translateY(0) scale(1)';
 						e.currentTarget.style.boxShadow = `0 8px 32px ${$themeStore.colors.primary}20`;
+					}}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							// Add click behavior if needed
+						}
 					}}>
 					<div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: {$themeStore.colors.primary}20; border-radius: 50%; opacity: 0.5;"></div>
 					<div style="position: relative; z-index: 1;">
@@ -202,6 +258,8 @@ padding: 24px;
 border: 1px solid rgba(255, 255, 255, 0.1);
 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;"
+					role="button"
+					tabindex="0"
 					on:mouseenter={(e) => {
 						e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
 						e.currentTarget.style.boxShadow = `0 16px 48px ${$themeStore.colors.success}30`;
@@ -209,6 +267,12 @@ transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); po
 					on:mouseleave={(e) => {
 						e.currentTarget.style.transform = 'translateY(0) scale(1)';
 						e.currentTarget.style.boxShadow = `0 8px 32px ${$themeStore.colors.success}20`;
+					}}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							// Add click behavior if needed
+						}
 					}}>
 					<div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: {$themeStore.colors.success}20; border-radius: 50%; opacity: 0.5;"></div>
 					<div style="position: relative; z-index: 1;">
@@ -228,6 +292,8 @@ padding: 24px;
 border: 1px solid rgba(255, 255, 255, 0.1);
 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;"
+					role="button"
+					tabindex="0"
 					on:mouseenter={(e) => {
 						e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
 						e.currentTarget.style.boxShadow = `0 16px 48px ${$themeStore.colors.warning}30`;
@@ -235,6 +301,12 @@ transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); po
 					on:mouseleave={(e) => {
 						e.currentTarget.style.transform = 'translateY(0) scale(1)';
 						e.currentTarget.style.boxShadow = `0 8px 32px ${$themeStore.colors.warning}20`;
+					}}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							// Add click behavior if needed
+						}
 					}}>
 					<div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: {$themeStore.colors.warning}20; border-radius: 50%; opacity: 0.5;"></div>
 					<div style="position: relative; z-index: 1;">
@@ -254,6 +326,8 @@ padding: 24px;
 border: 1px solid rgba(255, 255, 255, 0.1);
 box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden;"
+					role="button"
+					tabindex="0"
 					on:mouseenter={(e) => {
 						e.currentTarget.style.transform = 'translateY(-8px) scale(1.02)';
 						e.currentTarget.style.boxShadow = `0 16px 48px ${$themeStore.colors.error}30`;
@@ -261,6 +335,12 @@ transition: all 0.3s ease; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); po
 					on:mouseleave={(e) => {
 						e.currentTarget.style.transform = 'translateY(0) scale(1)';
 						e.currentTarget.style.boxShadow = `0 8px 32px ${$themeStore.colors.error}20`;
+					}}
+					on:keydown={(e) => {
+						if (e.key === 'Enter' || e.key === ' ') {
+							e.preventDefault();
+							// Add click behavior if needed
+						}
 					}}>
 					<div style="position: absolute; top: -20px; right: -20px; width: 80px; height: 80px; background: {$themeStore.colors.error}20; border-radius: 50%; opacity: 0.5;"></div>
 					<div style="position: relative; z-index: 1;">
@@ -315,8 +395,9 @@ transition: all 0.3s ease;">
 					{:else}
 						<div style="display: flex; flex-direction: column; gap: 12px;">
 							{#each tasks as task (task.id)}
-								<div style="background: {$themeStore.theme === 'light' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(30, 41, 59, 0.6)'}; border-radius: 16px; padding: 16px; border: 1px solid {$themeStore.colors.cardBorder}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; tabindex: '0';"
+								<div style="background: {$themeStore.theme === 'light' ? 'rgba(248, 250, 252, 0.8)' : 'rgba(30, 41, 59, 0.6)'}; border-radius: 16px; padding: 16px; border: 1px solid {$themeStore.colors.cardBorder}; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;"
 									role="button"
+									tabindex={0}
 									on:mouseenter={(e) => {
 										e.currentTarget.style.transform = 'translateY(-2px)';
 										e.currentTarget.style.boxShadow = $themeStore.theme === 'light' ? '0 4px 20px rgba(0, 0, 0, 0.08)' : `0 4px 20px ${$themeStore.colors.shadow}`;
@@ -382,8 +463,32 @@ transition: all 0.3s ease;">
 {#if isDialogOpen}
 	<TaskDialog
 		isOpen={isDialogOpen}
-		{selectedTask}
+		selectedTask={selectedTask}
 		onClose={closeDialog}
-		onSave={selectedTask ? handleUpdateTask : handleCreateTask}
+		onSave={(taskData: Partial<Task>) => selectedTask ? handleUpdateTask(taskData) : handleCreateTask(taskData)}
+		isLoading={isCreatingTask || isUpdatingTask}
 	/>
+{/if}
+
+<!-- Loading Popup -->
+{#if showLoadingPopup}
+	<div 
+		style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 10000;"
+	>
+		<div style="background: {$themeStore.theme === 'light' ? '#ffffff' : '#1e293b'}; border-radius: 16px; padding: 24px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); border: 1px solid {$themeStore.theme === 'light' ? '#e2e8f0' : '#334155'}; min-width: 300px; text-align: center;">
+			<div style="display: flex; justify-content: center; margin-bottom: 16px;">
+				<div style="width: 40px; height: 40px; border: 3px solid {$themeStore.colors.primary}20; border-top: 3px solid {$themeStore.colors.primary}; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+			</div>
+			<p style="margin: 0; color: {$themeStore.theme === 'light' ? '#1e293b' : '#f1f5f9'}; font-size: 16px; font-weight: 500;">
+				{loadingMessage}
+			</p>
+		</div>
+	</div>
+	
+	<style>
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+	</style>
 {/if}

@@ -1,8 +1,8 @@
 import { json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
-
-// Mock task storage (in production, use a database)
-const tasks = new Map<string, any[]>();
+import { ObjectId } from 'mongodb';
+import { getTasksCollection } from '$lib/db';
+import { env } from '$env/dynamic/private';
 
 function getUserIdFromToken(authHeader: string): string | null {
   if (!authHeader?.startsWith('Bearer ')) {
@@ -11,7 +11,7 @@ function getUserIdFromToken(authHeader: string): string | null {
 
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const decoded = jwt.verify(token, env.JWT_SECRET || 'your-secret-key') as any;
     return decoded.userId;
   } catch {
     return null;
@@ -32,15 +32,22 @@ export async function DELETE({ request, params }: { request: Request; params: { 
     return json({ error: 'Task ID is required' }, { status: 400 });
   }
 
-  const userTasks = tasks.get(userId) || [];
-  const taskIndex = userTasks.findIndex(t => t.id === id);
-  
-  if (taskIndex === -1) {
-    return json({ error: 'Task not found' }, { status: 404 });
+  try {
+    const tasksCollection = await getTasksCollection();
+    
+    // Find and delete the task
+    const result = await tasksCollection.deleteOne({
+      _id: new ObjectId(id),
+      userId: userId
+    });
+
+    if (result.deletedCount === 0) {
+      return json({ error: 'Task not found' }, { status: 404 });
+    }
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error('Failed to delete task:', error);
+    return json({ error: 'Failed to delete task' }, { status: 500 });
   }
-
-  userTasks.splice(taskIndex, 1);
-  tasks.set(userId, userTasks);
-
-  return new Response(null, { status: 204 });
 };

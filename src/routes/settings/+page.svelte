@@ -24,7 +24,9 @@
 		notificationInterval: '0',
 		enableNotifications: false,
 		mentionUser: false,
-		userMention: ''
+		userMention: '',
+		reminderInterval: 1,
+		reminderUnit: 'hours'
 	};
 	
 	// User statistics
@@ -146,9 +148,11 @@
 				settings = {
 					discordWebhookUrl: data.webhookUrl || '',
 					notificationInterval: data.notificationInterval || '0',
-					enableNotifications: data.enableNotifications || false,
+					enableNotifications: data.notificationsEnabled || false,
 					mentionUser: data.mentionUser || false,
-					userMention: data.userMention || ''
+					userMention: data.userMention || '',
+					reminderInterval: data.reminderInterval || 1,
+					reminderUnit: data.reminderUnit || 'hours'
 				};
 			}
 		} catch (error) {
@@ -223,22 +227,32 @@
 async function saveSettings() {
     isSaving = true;
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+        testResult = 'Please log in to save settings';
+        isSaving = false;
+        return;
+    }
 
 		try {
+			const settingsData = {
+				webhookUrl: settings.discordWebhookUrl,
+				notificationInterval: settings.notificationInterval,
+				notificationsEnabled: settings.enableNotifications,
+				mentionUser: settings.mentionUser,
+				userMention: settings.userMention,
+				reminderInterval: settings.reminderInterval,
+				reminderUnit: settings.reminderUnit
+			};
+			
+			console.log('Sending settings:', settingsData);
+			
 			const response = await fetch('/api/settings', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({
-					webhookUrl: settings.discordWebhookUrl,
-					notificationInterval: settings.notificationInterval,
-					notificationsEnabled: settings.enableNotifications,
-					mentionUser: settings.mentionUser,
-					userMention: settings.userMention
-				}),
+				body: JSON.stringify(settingsData),
 			});
 
 			if (response.ok) {
@@ -247,7 +261,9 @@ async function saveSettings() {
 					testResult = '';
 				}, 3000);
 			} else {
-				testResult = 'Failed to save settings';
+				const errorData = await response.json().catch(() => ({}));
+				console.error('Save settings error:', errorData);
+				testResult = `Failed to save settings: ${errorData.error || 'Unknown error'}`;
 			}
 		} catch (error) {
 			console.error('Failed to save settings:', error);
@@ -264,20 +280,30 @@ async function saveSettings() {
 		}
 
 		const token = localStorage.getItem('token');
-		if (!token) return;
+		if (!token) {
+			testResult = 'Please log in to test notifications';
+			return;
+		}
+
+		console.log('Testing webhook with token:', token ? 'present' : 'missing');
+		console.log('Webhook URL:', settings.discordWebhookUrl);
 
 		try {
+			const testData = {
+				webhookUrl: settings.discordWebhookUrl,
+				mentionUser: settings.mentionUser,
+				userMention: settings.userMention
+			};
+			
+			console.log('Sending test data:', testData);
+
 			const response = await fetch('/api/notifications/test', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
 					Authorization: `Bearer ${token}`,
 				},
-				body: JSON.stringify({
-					webhookUrl: settings.discordWebhookUrl,
-					mentionUser: settings.mentionUser,
-					userMention: settings.userMention
-				}),
+				body: JSON.stringify(testData),
 			});
 
 			const result = await response.json();
@@ -516,6 +542,40 @@ async function saveSettings() {
 											</div>
 										</div>
 									{/if}
+
+								<!-- Reminder Interval Settings -->
+								<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+									<div>
+										<label for="reminder-interval" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: {$themeStore.theme === 'light' ? '#1e293b' : '#f1f5f9'};">
+											Reminder Frequency
+										</label>
+										<input
+											id="reminder-interval"
+											type="number"
+											bind:value={settings.reminderInterval}
+											min="1"
+											max="60"
+											style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid {$themeStore.theme === 'light' ? '#e2e8f0' : '#334155'}; background: {$themeStore.theme === 'light' ? '#ffffff' : '#0f172a'}; color: {$themeStore.theme === 'light' ? '#1e293b' : '#f1f5f9'}; font-size: 15px; transition: all 0.2s ease;"
+										/>
+									</div>
+									<div>
+										<label for="reminder-unit" style="display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: {$themeStore.theme === 'light' ? '#1e293b' : '#f1f5f9'};">
+											Time Unit
+										</label>
+										<select
+											id="reminder-unit"
+											bind:value={settings.reminderUnit}
+											style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid {$themeStore.theme === 'light' ? '#e2e8f0' : '#334155'}; background: {$themeStore.theme === 'light' ? '#ffffff' : '#0f172a'}; color: {$themeStore.theme === 'light' ? '#1e293b' : '#f1f5f9'}; font-size: 15px; transition: all 0.2s ease;"
+										>
+											<option value="minutes">Minutes</option>
+											<option value="hours">Hours</option>
+											<option value="days">Days</option>
+										</select>
+									</div>
+								</div>
+								<div style="margin-top: 8px; font-size: 12px; color: {$themeStore.theme === 'light' ? '#64748b' : '#94a3b8'};">
+									⏰ Set how often to send task reminders (e.g., every 2 hours, every 1 day)
+								</div>
 								</div>
 
 								<!-- Test Result -->
@@ -638,10 +698,8 @@ async function saveSettings() {
 
   /* Form Elements */
   input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  select,
-  textarea {
+  input[type="number"],
+  select {
     width: 100%;
     padding: 12px 16px;
     border-radius: 12px;
@@ -653,10 +711,8 @@ async function saveSettings() {
   }
 
   input[type="text"]:focus,
-  input[type="email"]:focus,
-  input[type="password"]:focus,
-  select:focus,
-  textarea:focus {
+  input[type="number"]:focus,
+  select:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);

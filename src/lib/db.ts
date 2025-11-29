@@ -94,6 +94,8 @@ export interface Settings {
   mentionUser?: boolean;
   userMention?: string;
   notifyOnlyHighPriority: boolean;
+  reminderInterval?: number;
+  reminderUnit?: 'minutes' | 'hours' | 'days';
   createdAt: string;
   updatedAt: string;
 }
@@ -138,6 +140,8 @@ export function settingsDocToSettings(doc: SettingsDocument & { _id: ObjectId })
     mentionUser: doc.mentionUser,
     userMention: doc.userMention,
     notifyOnlyHighPriority: doc.notifyOnlyHighPriority,
+    reminderInterval: doc.reminderInterval,
+    reminderUnit: doc.reminderUnit,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,
   };

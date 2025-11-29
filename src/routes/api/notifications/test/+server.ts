@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
 import { sendDiscordNotification, createTestNotificationMessage } from '$lib/discord';
+import { env } from '$env/dynamic/private';
 
 function getUserIdFromToken(authHeader: string): string | null {
   if (!authHeader?.startsWith('Bearer ')) {
@@ -9,7 +10,7 @@ function getUserIdFromToken(authHeader: string): string | null {
 
   const token = authHeader.substring(7);
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+    const decoded = jwt.verify(token, env.JWT_SECRET || 'your-secret-key') as any;
     return decoded.userId;
   } catch {
     return null;
@@ -18,9 +19,13 @@ function getUserIdFromToken(authHeader: string): string | null {
 
 export async function POST({ request }: { request: Request }) {
   const authHeader = request.headers.get('authorization');
+  console.log('Test webhook auth header:', authHeader);
+  
   const userId = getUserIdFromToken(authHeader || '');
+  console.log('Test webhook userId:', userId);
   
   if (!userId) {
+    console.log('Test webhook unauthorized - no userId found');
     return json({ error: 'Unauthorized' }, { status: 401 });
   }
 
