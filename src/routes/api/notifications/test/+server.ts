@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import jwt from 'jsonwebtoken';
+import { sendDiscordNotification, createTestNotificationMessage } from '$lib/discord';
 
 function getUserIdFromToken(authHeader: string): string | null {
   if (!authHeader?.startsWith('Bearer ')) {
@@ -23,18 +24,27 @@ export async function POST({ request }: { request: Request }) {
     return json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { webhookUrl, mention } = await request.json();
+  const { webhookUrl, mentionUser, userMention } = await request.json();
 
   if (!webhookUrl) {
     return json({ error: 'Webhook URL is required' }, { status: 400 });
   }
 
   try {
-    // Mock Discord webhook call (in production, use actual webhook)
-    console.log('Mock Discord notification:', {
+    // Create the Discord message using the helper function
+    const message = createTestNotificationMessage(mentionUser, userMention);
+
+    // Send Discord webhook
+    const success = await sendDiscordNotification(webhookUrl, message);
+
+    if (!success) {
+      return json({ error: 'Failed to send Discord notification' }, { status: 500 });
+    }
+
+    console.log('Discord test notification sent successfully:', {
       webhookUrl,
-      mention,
-      message: '🧪 Test notification from Todo App',
+      mentionUser,
+      userMention,
       timestamp: new Date().toISOString(),
     });
 

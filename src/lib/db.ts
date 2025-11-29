@@ -91,6 +91,8 @@ export interface Settings {
   notificationsEnabled: boolean;
   webhookUrl?: string;
   mention?: string;
+  mentionUser?: boolean;
+  userMention?: string;
   notifyOnlyHighPriority: boolean;
   createdAt: string;
   updatedAt: string;
@@ -133,6 +135,8 @@ export function settingsDocToSettings(doc: SettingsDocument & { _id: ObjectId })
     notificationsEnabled: doc.notificationsEnabled,
     webhookUrl: doc.webhookUrl,
     mention: doc.mention,
+    mentionUser: doc.mentionUser,
+    userMention: doc.userMention,
     notifyOnlyHighPriority: doc.notifyOnlyHighPriority,
     createdAt: doc.createdAt,
     updatedAt: doc.updatedAt,

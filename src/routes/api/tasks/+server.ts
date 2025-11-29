@@ -4,6 +4,7 @@ import { ObjectId } from 'mongodb';
 import type { Task, TaskDocument } from '$lib/db';
 import { getTasksCollection, taskDocToTask } from '$lib/db';
 import { env } from '$env/dynamic/private';
+import { sendDiscordNotification, createTaskNotificationMessage } from '$lib/discord';
 
 function getUserIdFromToken(authHeader: string): string | null {
   if (!authHeader?.startsWith('Bearer ')) {
@@ -72,6 +73,36 @@ export async function POST({ request }: { request: Request }) {
   }
   
   const task = taskDocToTask(insertedDoc);
+
+  // Send Discord notification if webhook is configured
+  try {
+    // Get user settings to check if notifications are enabled
+    const settingsCollection = env.MONGODB_URI 
+      ? await import('$lib/db').then(db => db.getSettingsCollection())
+      : null;
+    
+    if (settingsCollection) {
+      const userSettings = await settingsCollection.findOne({ userId });
+      if (userSettings?.notificationsEnabled && userSettings?.webhookUrl) {
+        const message = createTaskNotificationMessage(
+          {
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            dueDate: task.dueDate,
+          },
+          userSettings.mentionUser,
+          userSettings.userMention
+        );
+        
+        await sendDiscordNotification(userSettings.webhookUrl, message);
+        console.log('Discord notification sent for new task:', task.id);
+      }
+    }
+  } catch (error) {
+    console.error('Failed to send Discord notification for new task:', error);
+    // Don't fail the task creation if notification fails
+  }
 
   return json(task, { status: 201 });
 };

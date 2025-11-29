@@ -276,6 +276,7 @@ async function saveSettings() {
 				body: JSON.stringify({
 					webhookUrl: settings.discordWebhookUrl,
 					mentionUser: settings.mentionUser,
+					userMention: settings.userMention
 				}),
 			});
 
